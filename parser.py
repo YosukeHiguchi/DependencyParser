@@ -16,6 +16,7 @@ class Parse(object):
         self.labels = [None] * n
         self.lefts = []
         self.rights = []
+
         for i in range(n+1):
             self.lefts.append(DefaultList(0))
             self.rights.append(DefaultList(0))
@@ -23,8 +24,10 @@ class Parse(object):
     def add(self, head, child, label=None):
         self.heads[child] = head
         self.labels[child] = label
+
         if child < head:
             self.lefts[head].append(child)
+
         else:
             self.rights[head].append(child)
 
@@ -46,18 +49,21 @@ class Parser(object):
         n = len(words)
         i = 2; stack = [1]; parse = Parse(n)
         tags = self.tagger.tag(words)
+
         while stack or (i+1) < n:
             features = extract_features(words, tags, i, n, stack, parse)
             scores = self.model.score(features)
             valid_moves = get_valid_moves(i, n, len(stack))
             guess = max(valid_moves, key=lambda move: scores[move])
             i = transition(guess, i, stack, parse)
+
         return tags, parse.heads
 
     def train_one(self, itn, words, gold_tags, gold_heads):
         n = len(words)
         i = 2; stack = [1]; parse = Parse(n)
         tags = self.tagger.tag(words)
+
         while stack or (i + 1) < n:
             features = extract_features(words, tags, i, n, stack, parse)
             scores = self.model.score(features)
@@ -70,6 +76,7 @@ class Parser(object):
             self.model.update(best, guess, features)
             i = transition(guess, i, stack, parse)
             self.confusion_matrix[best][guess] += 1
+
         return len([i for i in range(n-1) if parse.heads[i] == gold_heads[i]])
 
 
@@ -77,12 +84,15 @@ def transition(move, i, stack, parse):
     if move == SHIFT:
         stack.append(i)
         return i + 1
+
     elif move == RIGHT:
         parse.add(stack[-2], stack.pop())
         return i
+
     elif move == LEFT:
         parse.add(i, stack.pop())
         return i
+
     assert move in MOVES
 
 
@@ -90,10 +100,13 @@ def get_valid_moves(i, n, stack_depth):
     moves = []
     if i < n:
         moves.append(SHIFT)
+
     if stack_depth >= 2:
         moves.append(RIGHT)
+
     if stack_depth >= 1:
         moves.append(LEFT)
+
     return moves
 
 

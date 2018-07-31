@@ -29,14 +29,16 @@ class Perceptron(object):
     def score(self, features):
         all_weights = self.weights
         scores = dict((clas, 0) for clas in self.classes)
+
         for feat, value in features.items():
-            if value == 0:
+            if (value == 0) or (feat not in all_weights):
                 continue
-            if feat not in all_weights:
-                continue
+
             weights = all_weights[feat]
+
             for clas, weight in weights.items():
                 scores[clas] += value * weight
+
         return scores
 
     def update(self, truth, guess, features):
@@ -47,8 +49,10 @@ class Perceptron(object):
             self.weights[f][c] = w + v
 
         self.i += 1
+
         if truth == guess:
             return None
+
         for f in features:
             weights = self.weights.setdefault(f, {})
             upd_feat(truth, f, weights.get(truth, 0.0), 1.0)
@@ -57,13 +61,16 @@ class Perceptron(object):
     def average_weights(self):
         for feat, weights in self.weights.items():
             new_feat_weights = {}
+
             for clas, weight in weights.items():
                 param = (feat, clas)
                 total = self._totals[param]
                 total += (self.i - self._tstamps[param]) * weight
                 averaged = round(total / float(self.i), 3)
+
                 if averaged:
                     new_feat_weights[clas] = averaged
+
             self.weights[feat] = new_feat_weights
 
     def save(self, path):

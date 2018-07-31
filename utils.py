@@ -7,6 +7,7 @@ class DefaultList(list):
     def __getitem__(self, index):
         try:
             return list.__getitem__(self, index)
+
         except IndexError:
             return self.default
 
