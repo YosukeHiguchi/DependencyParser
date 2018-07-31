@@ -10,6 +10,3 @@ class DefaultList(list):
 
         except IndexError:
             return self.default
-
-def _pc(n, d):
-    return (float(n) / d) * 100
