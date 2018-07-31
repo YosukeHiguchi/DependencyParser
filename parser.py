@@ -21,7 +21,7 @@ class Parse(object):
         self.lefts = []
         self.rights = []
 
-        for i in range(n+1):
+        for i in range(n + 1):
             self.lefts.append(DefaultList(0))
             self.rights.append(DefaultList(0))
 
@@ -34,7 +34,6 @@ class Parse(object):
 
         else:
             self.rights[head].append(child)
-
 
 class Parser(object):
     def __init__(self, load=True):
@@ -81,7 +80,6 @@ class Parser(object):
 
         return len([i for i in range(n-1) if parse.heads[i] == gold_heads[i]])
 
-
 def transition(move, i, stack, parse):
     if move == SHIFT:
         stack.append(i)
@@ -97,7 +95,6 @@ def transition(move, i, stack, parse):
 
     assert move in MOVES
 
-
 def get_valid_moves(i, n, stack_depth):
     moves = []
     if i < n:
@@ -110,7 +107,6 @@ def get_valid_moves(i, n, stack_depth):
         moves.append(LEFT)
 
     return moves
-
 
 def get_gold_moves(n0, n, stack, heads, gold):
     def deps_between(target, others, gold):
@@ -138,7 +134,6 @@ def get_gold_moves(n0, n, stack, heads, gold):
         costly.add(LEFT)
         costly.add(RIGHT)
     return [m for m in MOVES if m not in costly]
-
 
 def extract_features(words, tags, n0, n, stack, parse):
     def get_stack_context(depth, stack, data):
