@@ -2,6 +2,7 @@
 Averaged perceptron classifier
 """
 
+import pickle
 from collections import defaultdict
 
 
@@ -75,7 +76,7 @@ class Perceptron(object):
 
     def save(self, path):
         print("Saving model to %s" % path)
-        pickle.dump(self.weights, open(path, 'w'))
+        pickle.dump(self.weights, open(path, 'wb'))
 
     def load(self, path):
-        self.weights = pickle.load(open(path))
+        self.weights = pickle.load(open(path, 'rb'))

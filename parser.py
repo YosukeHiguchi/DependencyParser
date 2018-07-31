@@ -1,3 +1,7 @@
+"""
+Dependency parser
+"""
+
 import os
 from collections import defaultdict
 
@@ -34,15 +38,14 @@ class Parse(object):
 
 class Parser(object):
     def __init__(self, load=True):
-        model_dir = os.path.dirname(__file__)
+        self.model_loc = os.path.join('model', 'parser.pickle')
         self.model = Perceptron(MOVES)
         if load:
-            self.model.load(path.join(model_dir, 'parser.pickle'))
+            self.model.load(self.model_loc)
         self.tagger = PerceptronTagger(load=load)
-        self.confusion_matrix = defaultdict(lambda: defaultdict(int))
 
     def save(self):
-        self.model.save(path.join(os.path.dirname(__file__), 'parser.pickle'))
+        self.model.save(self.model_loc)
         self.tagger.save()
 
     def parse(self, words):
@@ -75,7 +78,6 @@ class Parser(object):
             best = max(gold_moves, key=lambda move: scores[move])
             self.model.update(best, guess, features)
             i = transition(guess, i, stack, parse)
-            self.confusion_matrix[best][guess] += 1
 
         return len([i for i in range(n-1) if parse.heads[i] == gold_heads[i]])
 

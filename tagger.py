@@ -3,6 +3,7 @@ Greedy Averaged Perceptron POS Tagger
 """
 
 import os
+import pickle
 from collections import defaultdict
 
 from perceptron import Perceptron
@@ -14,8 +15,8 @@ END = ['-END-', '-END2-']
 
 class PerceptronTagger(object):
     '''Greedy Averaged Perceptron tagger'''
-    model_loc = os.path.join(os.path.dirname(__file__), 'tagger.pickle')
     def __init__(self, classes=None, load=True):
+        self.model_loc = os.path.join('model', 'tagger.pickle')
         self.tagdict = {}
         if classes:
             self.classes = classes
@@ -23,7 +24,7 @@ class PerceptronTagger(object):
             self.classes = set()
         self.model = Perceptron(self.classes)
         if load:
-            self.load(PerceptronTagger.model_loc)
+            self.load(self.model_loc)
 
     def tag(self, words, tokenize=True):
         prev, prev2 = START
@@ -54,8 +55,7 @@ class PerceptronTagger(object):
 
     def save(self):
         # Pickle as a binary file
-        pickle.dump((self.model.weights, self.tagdict, self.classes),
-                    open(PerceptronTagger.model_loc, 'wb'), -1)
+        pickle.dump((self.model.weights, self.tagdict, self.classes), open(self.model_loc, 'wb'), -1)
 
     def train_one(self, words, tags):
         prev, prev2 = START
@@ -68,8 +68,8 @@ class PerceptronTagger(object):
                 self.model.update(tags[i], guess, feats)
             prev2 = prev; prev = guess
 
-    def load(self, loc):
-        w_td_c = pickle.load(open(loc, 'rb'))
+    def load(self, path):
+        w_td_c = pickle.load(open(path, 'rb'))
         self.model.weights, self.tagdict, self.classes = w_td_c
         self.model.classes = self.classes
 

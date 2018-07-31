@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+
+log
+note
+
+.DS_Store
+
