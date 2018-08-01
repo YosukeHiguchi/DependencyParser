@@ -3,6 +3,8 @@ __pycache__
 
 log
 note
+model/*
 
 .DS_Store
 
+!.gitkeep
