@@ -63,10 +63,10 @@ def evaluate(parser, gold_sents):
     for (words, tags, gold_heads, gold_labels) in tqdm(gold_sents):
         _, heads = parser.parse(words)
 
-        for i, w in enumerate(words):
-            print(i, w, gold_heads[i], heads[i])
-
-        print("")
+        # for i, w in enumerate(words):
+        #     print(i, w, gold_heads[i], heads[i])
+        #
+        # print("")
 
         for i, w in list(enumerate(words))[1:-1]:
             if i == 0 or gold_labels[i] in ('P', 'punct'):
@@ -99,5 +99,10 @@ def main(train_dir, test_dir):
     print('Evaluating dependency parser....')
     evaluate(parser, list(read_conll(test_dir)))
 
+def test(test_dir):
+    parser = Parser(load=True)
+    evaluate(parser, list(read_conll(test_dir)))
+
 if __name__ == '__main__':
     main('./data/train.conll', './data/dev.conll')
+    # test('./data/dev.conll')
