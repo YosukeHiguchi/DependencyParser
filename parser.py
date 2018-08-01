@@ -3,7 +3,8 @@ Dependency parser
 """
 
 import os
-from collections import defaultdict
+import copy
+from collections import defaultdict, deque
 
 from perceptron import Perceptron
 from tagger import PerceptronTagger
@@ -52,7 +53,7 @@ class Parser(object):
         i = 2; stack = [1]; parse = Parse(n)
         tags = self.tagger.tag(words)
 
-        while stack or (i+1) < n:
+        while stack or (i + 1) < n:
             features = extract_features(words, tags, i, n, stack, parse)
             scores = self.model.score(features)
             valid_moves = get_valid_moves(i, n, len(stack))
@@ -60,6 +61,56 @@ class Parser(object):
             i = transition(guess, i, stack, parse)
 
         return tags, parse.heads
+
+    def parse_beam(self, words, size):
+        class State(object):
+            def __init__(self, i, stack, parse, score, depth):
+                self.i = i
+                self.stack = stack
+                self.parse = parse
+                self.score = score
+                self.depth = depth
+
+        n = len(words)
+        tags = self.tagger.tag(words)
+        st0 = State(2, [1], Parse(n), 0.0, 0)
+
+        q = deque([])
+        q.append(st0)
+
+        cur_depth = 0
+
+        ret = []
+        max_score = 0.0
+
+        while len(q) > 0:
+            if q[0].depth != cur_depth:
+                if len(q) > size:
+                    q = deque(sorted(q, key=lambda x: x.score, reverse=True))
+                    while len(q) > 5:
+                        q.pop()
+                cur_depth += 1
+
+            # print(cur_depth, len(q))
+            st = q.popleft()
+
+            if not (st.stack or (st.i + 1) < n):
+                if max_score < st.score:
+                    ret = st.parse.heads
+                    max_score = st.score
+
+                continue
+
+            features = extract_features(words, tags, st.i, n, st.stack, st.parse)
+            scores = self.model.score(features)
+            valid_moves = get_valid_moves(st.i, n, len(st.stack))
+
+            for mv in valid_moves:
+                new_st = State(st.i, copy.deepcopy(st.stack), copy.deepcopy(st.parse), st.score + scores[mv], st.depth + 1)
+                new_st.i = transition(mv, new_st.i, new_st.stack, new_st.parse)
+                q.append(new_st)
+
+        return tags, ret
 
     def train_one(self, itn, words, gold_tags, gold_heads):
         n = len(words)

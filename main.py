@@ -63,10 +63,36 @@ def evaluate(parser, gold_sents):
     for (words, tags, gold_heads, gold_labels) in tqdm(gold_sents):
         _, heads = parser.parse(words)
 
-        # for i, w in enumerate(words):
-        #     print(i, w, gold_heads[i], heads[i])
-        #
-        # print("")
+        for i, w in enumerate(words):
+            print(i, w, gold_heads[i], heads[i])
+
+        print("")
+
+        for i, w in list(enumerate(words))[1:-1]:
+            if i == 0 or gold_labels[i] in ('P', 'punct'):
+                continue
+
+            if heads[i] == gold_heads[i] or (heads[i] == len(heads) and gold_heads[i] == 0):
+                c += 1
+
+            t += 1
+
+    print('Result:')
+    print(c, t, float(c) / t)
+
+def evaluate_beam(parser, gold_sents):
+    c = 0; t = 0
+
+    for (words, tags, gold_heads, gold_labels) in tqdm(gold_sents):
+        if len(words) == 2:
+            _, heads = parser.parse(words)
+        else:
+            _, heads = parser.parse_beam(words, 10)
+
+        for i, w in enumerate(words):
+            print(i, w, gold_heads[i], heads[i])
+
+        print("")
 
         for i, w in list(enumerate(words))[1:-1]:
             if i == 0 or gold_labels[i] in ('P', 'punct'):
@@ -102,6 +128,8 @@ def main(train_dir, test_dir):
 def test(test_dir):
     parser = Parser(load=True)
     evaluate(parser, list(read_conll(test_dir)))
+    # beam search
+    # evaluate_beam(parser, list(read_conll(test_dir)))
 
 if __name__ == '__main__':
     main('./data/train.conll', './data/dev.conll')
